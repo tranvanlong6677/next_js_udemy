@@ -54,7 +54,6 @@ const PrevArrow = (props: any) => {
   );
 };
 const MainSlider = (props: { data: ITrackTop[]; category: string }) => {
-  console.log(">>> check data", props.data);
   const settings: Settings = {
     dots: true,
     infinite: true,

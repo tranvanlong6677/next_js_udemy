@@ -15,9 +15,10 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
-import { Avatar, Container } from "@mui/material";
+import { Avatar, Button, Container } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -61,6 +62,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function AppHeader() {
+  const { data: session } = useSession();
+
   const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
@@ -95,7 +98,10 @@ export default function AppHeader() {
       id={menuId}
       keepMounted
       open={isMenuOpen}
-      onClose={handleMenuClose}
+      onClose={() => {
+        handleMenuClose();
+        signOut();
+      }}
     >
       <MenuItem onClick={handleMenuClose}>
         <Link
@@ -105,7 +111,14 @@ export default function AppHeader() {
           Profile
         </Link>
       </MenuItem>
-      <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+      <MenuItem
+        onClick={() => {
+          handleMenuClose();
+          signOut();
+        }}
+      >
+        Logout
+      </MenuItem>
     </Menu>
   );
 
@@ -160,7 +173,6 @@ export default function AppHeader() {
       </MenuItem>
     </Menu>
   );
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: "#f50" }}>
@@ -190,46 +202,61 @@ export default function AppHeader() {
               />
             </Search>
             <Box sx={{ flexGrow: 1 }} />
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                gap: "15px",
-                alignItems: "center",
-                cursor: "pointer",
-                "> a": {
-                  color: "unset",
-                  textDecoration: "none",
-                },
-              }}
-            >
-              <Link href="/playlist">Playlist</Link>
-              <Link href="/like">Likes</Link>
-              <Link href="/upload">Upload</Link>
+            {session ? (
+              <>
+                <Box
+                  sx={{
+                    display: { xs: "none", md: "flex" },
+                    gap: "15px",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    "> a": {
+                      color: "unset",
+                      textDecoration: "none",
+                    },
+                  }}
+                >
+                  <Link href="/playlist">Playlist</Link>
+                  <Link href="/like">Likes</Link>
+                  <Link href="/track/upload">Upload</Link>
 
-              <IconButton
-                size="large"
-                edge="end"
-                aria-label="account of current user"
-                aria-controls={menuId}
-                aria-haspopup="true"
-                onClick={handleProfileMenuOpen}
-                color="inherit"
+                  <IconButton
+                    size="large"
+                    edge="end"
+                    aria-label="account of current user"
+                    aria-controls={menuId}
+                    aria-haspopup="true"
+                    onClick={handleProfileMenuOpen}
+                    color="inherit"
+                  >
+                    <Avatar
+                      src={session && (session?.user?.username as string)}
+                    ></Avatar>
+                  </IconButton>
+                </Box>
+                <Box sx={{ display: { xs: "flex", md: "none" } }}>
+                  <IconButton
+                    size="large"
+                    aria-label="show more"
+                    aria-controls={mobileMenuId}
+                    aria-haspopup="true"
+                    onClick={handleMobileMenuOpen}
+                    color="inherit"
+                  >
+                    <MoreIcon />
+                  </IconButton>
+                </Box>
+              </>
+            ) : (
+              <Button
+                sx={{ color: "#fff" }}
+                onClick={() => {
+                  router.push("/auth/signin");
+                }}
               >
-                <Avatar>TL</Avatar>
-              </IconButton>
-            </Box>
-            <Box sx={{ display: { xs: "flex", md: "none" } }}>
-              <IconButton
-                size="large"
-                aria-label="show more"
-                aria-controls={mobileMenuId}
-                aria-haspopup="true"
-                onClick={handleMobileMenuOpen}
-                color="inherit"
-              >
-                <MoreIcon />
-              </IconButton>
-            </Box>
+                Login
+              </Button>
+            )}
           </Toolbar>
         </Container>
       </AppBar>

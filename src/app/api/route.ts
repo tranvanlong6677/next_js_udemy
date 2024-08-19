@@ -4,9 +4,6 @@ export async function GET(request: NextRequest, response: NextResponse) {
   //   return Response.json({ data: "hihi" });
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-
-  console.log(">>> check url: " + url);
-  console.log(">>> check searchParams: " + searchParams.get("audio"));
   const fileName = searchParams.get("audio");
   return await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/tracks/${fileName}`

@@ -1,10 +1,8 @@
 "use client";
-import FooterPlays from "@/components/footer/app.footer";
-import AppHeader from "@/components/header/app.header";
 import ThemeRegistry from "@/components/theme-registry/theme.registry";
-import Box from "@mui/material/Box";
-
 import * as React from "react";
+import NextAuthWrapper from "./lib/next.auth.wrapper";
+import { ToastProvider } from "@/utils/toast";
 
 export default function RootLayout({
   children,
@@ -15,9 +13,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ThemeRegistry>
-          <AppHeader />
-          {children}
-          <FooterPlays />
+          <NextAuthWrapper>
+            <ToastProvider>{children}</ToastProvider>
+          </NextAuthWrapper>
         </ThemeRegistry>
       </body>
     </html>

@@ -48,4 +48,8 @@ declare global {
     };
     result: T[];
   }
+
+  interface IAuthUser {
+    // access_token:
+  }
 }
