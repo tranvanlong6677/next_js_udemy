@@ -63,6 +63,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function AppHeader() {
   const { data: session } = useSession();
+  console.log(">>> check session", session);
 
   const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -105,7 +106,7 @@ export default function AppHeader() {
     >
       <MenuItem onClick={handleMenuClose}>
         <Link
-          href={"/profile"}
+          href={`/profile/${session?.user?._id}`}
           style={{ textDecoration: "none", color: "unset" }}
         >
           Profile
