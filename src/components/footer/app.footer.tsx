@@ -33,6 +33,9 @@ const FooterPlays = () => {
             display: "flex",
             gap: "40px",
             alignItems: "center",
+            ".rhap_main": {
+              gap: "40px",
+            },
           }}
         >
           <AudioPlayer
@@ -43,6 +46,7 @@ const FooterPlays = () => {
             volume={0.5}
             loop={true}
             style={{ boxShadow: "unset", backgroundColor: "#f2f2f2" }}
+            layout={"horizontal-reverse"}
             // other props here
           />
 
