@@ -22,6 +22,13 @@ declare global {
     createdAt: string;
     updatedAt: string;
   }
+  interface ITrackCurrent extends ITrackTop {
+    isPlaying: boolean;
+  }
+  export interface ITrackContext {
+    trackCurrent: ITrackCurrent | null;
+    setTrackCurrent: (track: ITrackCurrent | null) => void;
+  }
   interface IRequest {
     url: string;
     method: string;
