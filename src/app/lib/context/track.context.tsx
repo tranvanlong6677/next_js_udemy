@@ -53,5 +53,3 @@ export const TrackContextProvider = ({ children }: { children: ReactNode }) => {
     </TrackContext.Provider>
   );
 };
-
-// export default useTrackContext = () => useContext(TrackContext);
