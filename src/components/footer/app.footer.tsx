@@ -2,23 +2,25 @@ import "react-h5-audio-player/lib/styles.css";
 import { AppBar, Box, Container } from "@mui/material";
 import AudioPlayer from "react-h5-audio-player";
 import { useHasMounted } from "@/utils/customHook";
-import { useContext, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { TrackContext } from "@/app/lib/context/track.context";
 const FooterPlays = () => {
   const { trackCurrent, setTrackCurrent } =
     useContext<ITrackContext>(TrackContext);
   const playerFooterRef = useRef<any>(null);
+  useEffect(() => {
+    if (trackCurrent?.isPlaying) {
+      playerFooterRef?.current?.audio?.current?.play();
+    } else {
+      playerFooterRef?.current?.audio?.current?.pause();
+    }
+  }, [trackCurrent]);
 
   const hasMounted = useHasMounted();
   if (!hasMounted) {
     return <></>;
   }
 
-  if (trackCurrent?.isPlaying) {
-    playerFooterRef?.current?.audio?.current?.play();
-  } else {
-    playerFooterRef?.current?.audio?.current?.pause();
-  }
   return (
     <Box
       sx={{
@@ -67,7 +69,7 @@ const FooterPlays = () => {
                 setTrackCurrent({ ...trackCurrent, isPlaying: false });
               }
             }}
-            onPlay={(e) => {
+            onPlay={() => {
               if (trackCurrent) {
                 setTrackCurrent({ ...trackCurrent, isPlaying: true });
               }

@@ -14,12 +14,12 @@ import PauseIcon from "@mui/icons-material/Pause";
 
 import { TrackContext } from "@/app/lib/context/track.context";
 import { useContext, useEffect } from "react";
+import Link from "next/link";
 
 export const ProfileTrackElement = (props: { data: ITrackTop }) => {
   const { trackCurrent, setTrackCurrent } =
     useContext<ITrackContext>(TrackContext);
   const { data } = props;
-  console.log(">>> check data", data);
   const theme = useTheme();
 
   return (
@@ -33,9 +33,15 @@ export const ProfileTrackElement = (props: { data: ITrackTop }) => {
       >
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <CardContent sx={{ flex: "1 0 auto" }}>
-            <Typography component="div" variant="h5">
-              {data?.title?.toUpperCase()}
-            </Typography>
+            <Link
+              href={`/track/${data._id}?audio=${data.trackUrl}&id=${data._id}`}
+              style={{ color: "unset", textDecoration: "unset" }}
+            >
+              <Typography component="div" variant="h5">
+                {data?.title?.toUpperCase()}
+              </Typography>
+            </Link>
+
             <Typography
               variant="subtitle1"
               color="text.secondary"
