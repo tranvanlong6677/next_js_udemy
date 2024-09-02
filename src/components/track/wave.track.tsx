@@ -1,6 +1,13 @@
 "use client";
 
-import { useRef, useMemo, useCallback, useState, useEffect } from "react";
+import {
+  useRef,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+  useContext,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import { useWavesurfer } from "@/utils/customHook";
 import { WaveSurferOptions } from "wavesurfer.js";
@@ -8,6 +15,7 @@ import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import "./wave.scss";
 import { Box, Button, Tooltip } from "@mui/material";
+import { TrackContext } from "@/app/lib/context/track.context";
 const arrComments = [
   {
     id: 1,
@@ -31,9 +39,16 @@ const arrComments = [
     content: "just a comment3",
   },
 ];
-const WaveTrack = () => {
+export interface IProps {
+  dataTrack: ITrackTop | null;
+}
+const WaveTrack = (props: IProps) => {
+  const { dataTrack } = props;
+  const { trackCurrent, setTrackCurrent } =
+    useContext<ITrackContext>(TrackContext);
   const searchParams = useSearchParams();
   const fileName = searchParams.get("audio");
+
   const containerRef = useRef<HTMLDivElement>(null);
   const timeRef = useRef<HTMLDivElement>(null);
   const durationRef = useRef<HTMLDivElement>(null);
@@ -90,14 +105,10 @@ const WaveTrack = () => {
     }
 
     return {
-      // waveColor: "rgb(200, 0, 200)",
-      // progressColor: "rgb(100, 0, 100)",
       url: `/api?audio=${fileName}`,
       barWidth: 3,
       height: 100,
       cursorWidth: 3,
-      // waveColor: "#ccc",
-      // progressColor: "#ff4e00",
       waveColor: gradient,
       progressColor: progressGradient,
       cursorColor: "#000",
@@ -106,7 +117,7 @@ const WaveTrack = () => {
 
   const callLeft = (moment: number) => {
     const durationHardCode = 199;
-    return (moment / 199) * 100;
+    return (moment / durationHardCode) * 100;
   };
 
   const wavesurfer = useWavesurfer(containerRef, optionsMemo);
@@ -132,8 +143,12 @@ const WaveTrack = () => {
     );
 
     const subscriptions = [
-      wavesurfer?.on("play", () => setIsPlaying(true)),
-      wavesurfer?.on("pause", () => setIsPlaying(false)),
+      wavesurfer?.on("play", () => {
+        setIsPlaying(true);
+      }),
+      wavesurfer?.on("pause", () => {
+        setIsPlaying(false);
+      }),
       wavesurfer.on(
         "decode",
         (duration) => (durationEl.textContent = formatTime(duration))
@@ -147,19 +162,38 @@ const WaveTrack = () => {
       subscriptions.forEach((unsub) => unsub());
     };
   }, [wavesurfer]);
+
+  // neu current track o footer chay thi wavesurfer o trang detail se dung
+  useEffect(() => {
+    if (wavesurfer && trackCurrent?.isPlaying) {
+      wavesurfer.pause();
+    }
+  }, [trackCurrent]);
+
+  // load trang detail track, neu chua co current track thi se cho track hien tai detail thanh current track
+  useEffect(() => {
+    if (dataTrack && dataTrack?._id && !trackCurrent?._id) {
+      setTrackCurrent({ ...dataTrack, isPlaying: false } as ITrackCurrent);
+    }
+  }, [dataTrack]);
   const onPlayPause = useCallback(() => {
     if (wavesurfer) {
       wavesurfer && wavesurfer.playPause();
       setIsPlaying(wavesurfer.isPlaying());
     }
   }, [wavesurfer]);
-
   return (
     <Box className="wave-track-container">
       <Box sx={{ display: "flex", padding: "50px 500px 100px 30px" }}>
         <Button
           onClick={() => {
             onPlayPause();
+            if (dataTrack && wavesurfer) {
+              setTrackCurrent({
+                ...trackCurrent,
+                isPlaying: false,
+              } as ITrackCurrent);
+            }
           }}
           className="button-play-pause"
         >
@@ -183,7 +217,7 @@ const WaveTrack = () => {
               lineHeight: "none",
             }}
           >
-            Song name
+            {dataTrack?.title}
           </Box>
           <Box
             component={"h3"}
@@ -199,20 +233,26 @@ const WaveTrack = () => {
               display: "block",
             }}
           >
-            Singer
+            {dataTrack?.description}
           </Box>
         </Box>
       </Box>
       <div
         style={{
-          border: "1px solid red",
-          width: "150px",
-          height: "150px",
           position: "absolute",
-          top: "30px",
+          top: "0px",
           right: "20px",
         }}
-      ></div>
+      >
+        <img
+          style={{
+            width: "150px",
+            zIndex: -100,
+          }}
+          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/images/${dataTrack?.imgUrl}`}
+          alt=""
+        />
+      </div>
       <div ref={containerRef} className="wave-form-container">
         <div ref={timeRef} className="time"></div>
         <div ref={durationRef} className="duration"></div>
@@ -228,9 +268,14 @@ const WaveTrack = () => {
           }}
         ></div>
         <div className="commments">
-          {arrComments?.map((item) => {
+          {arrComments?.map((item, index) => {
             return (
-              <Tooltip title={`${item?.content}`} placement="bottom-end" arrow>
+              <Tooltip
+                title={`${item?.content}`}
+                placement="bottom-end"
+                arrow
+                key={`item-${index}`}
+              >
                 <img
                   onPointerMove={(e) => {
                     const hover = hoverRef.current!;

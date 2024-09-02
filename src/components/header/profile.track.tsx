@@ -10,11 +10,18 @@ import Typography from "@mui/material/Typography";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
+import PauseIcon from "@mui/icons-material/Pause";
+
+import { TrackContext } from "@/app/lib/context/track.context";
+import { useContext, useEffect } from "react";
+import Link from "next/link";
 
 export const ProfileTrackElement = (props: { data: ITrackTop }) => {
+  const { trackCurrent, setTrackCurrent } =
+    useContext<ITrackContext>(TrackContext);
   const { data } = props;
-  console.log(">>> check data", data);
   const theme = useTheme();
+
   return (
     <>
       <Card
@@ -26,9 +33,15 @@ export const ProfileTrackElement = (props: { data: ITrackTop }) => {
       >
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <CardContent sx={{ flex: "1 0 auto" }}>
-            <Typography component="div" variant="h5">
-              {data?.title?.toUpperCase()}
-            </Typography>
+            <Link
+              href={`/track/${data._id}?audio=${data.trackUrl}&id=${data._id}`}
+              style={{ color: "unset", textDecoration: "unset" }}
+            >
+              <Typography component="div" variant="h5">
+                {data?.title?.toUpperCase()}
+              </Typography>
+            </Link>
+
             <Typography
               variant="subtitle1"
               color="text.secondary"
@@ -45,8 +58,25 @@ export const ProfileTrackElement = (props: { data: ITrackTop }) => {
                 <SkipPreviousIcon />
               )}
             </IconButton>
-            <IconButton aria-label="play/pause">
-              <PlayArrowIcon sx={{ height: 38, width: 38 }} />
+            <IconButton
+              aria-label="play/pause"
+              onClick={() => {
+                if (
+                  trackCurrent &&
+                  trackCurrent.isPlaying === true &&
+                  trackCurrent._id === data._id
+                ) {
+                  setTrackCurrent({ ...trackCurrent, isPlaying: false });
+                  return;
+                }
+                setTrackCurrent({ ...data, isPlaying: true });
+              }}
+            >
+              {trackCurrent?.isPlaying && trackCurrent?._id === data?._id ? (
+                <PauseIcon sx={{ height: 38, width: 38 }} />
+              ) : (
+                <PlayArrowIcon sx={{ height: 38, width: 38 }} />
+              )}
             </IconButton>
             <IconButton aria-label="next">
               {theme.direction === "rtl" ? (

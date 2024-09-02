@@ -92,7 +92,7 @@ const MainSlider = (props: { data: ITrackTop[]; category: string }) => {
                     alt=""
                   />
                   <Link
-                    href={`/track/${item._id}?audio=${item.trackUrl}`}
+                    href={`/track/${item._id}?audio=${item.trackUrl}&id=${item._id}`}
                     style={{ color: "unset", textDecoration: "unset" }}
                   >
                     <h4>{item?.title}</h4>
