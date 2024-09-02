@@ -46,6 +46,23 @@ declare global {
     data?: T;
   }
 
+  interface ICommentTrack {
+    _id: string;
+    content: string;
+    moment: number;
+    user: {
+      _id: string;
+      email: string;
+      name: string;
+      role: string;
+      type: string;
+    };
+    track: string;
+    isDeleted: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }
+
   interface IModelPaginate<T> {
     meta: {
       current: number;

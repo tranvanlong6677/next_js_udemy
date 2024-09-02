@@ -19,6 +19,7 @@ import { Avatar, Button, Container } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signIn, signOut } from "next-auth/react";
+import { fetchDefaultImages } from "@/utils/api";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -63,7 +64,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function AppHeader() {
   const { data: session } = useSession();
-
   const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
@@ -229,9 +229,15 @@ export default function AppHeader() {
                     onClick={handleProfileMenuOpen}
                     color="inherit"
                   >
-                    <Avatar
-                      src={session && (session?.user?.username as string)}
-                    ></Avatar>
+                    <img
+                      src={fetchDefaultImages(session.user.type)}
+                      alt=""
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                      }}
+                    />
                   </IconButton>
                 </Box>
                 <Box sx={{ display: { xs: "flex", md: "none" } }}>

@@ -21,7 +21,7 @@ const FooterPlays = () => {
     return <></>;
   }
 
-  return (
+  return trackCurrent?._id ? (
     <Box
       sx={{
         ".rhap_main": {},
@@ -52,6 +52,11 @@ const FooterPlays = () => {
             },
             ".information_track_footer": {
               minWidth: "200px",
+              div: {
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              },
             },
           }}
         >
@@ -96,6 +101,8 @@ const FooterPlays = () => {
         </Container>
       </AppBar>
     </Box>
+  ) : (
+    <></>
   );
 };
 export default FooterPlays;

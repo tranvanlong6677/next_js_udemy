@@ -8,42 +8,29 @@ import {
   useEffect,
   useContext,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useWavesurfer } from "@/utils/customHook";
 import { WaveSurferOptions } from "wavesurfer.js";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import "./wave.scss";
-import { Box, Button, Tooltip } from "@mui/material";
+import { Box, Button, Chip, Tooltip } from "@mui/material";
 import { TrackContext } from "@/app/lib/context/track.context";
-const arrComments = [
-  {
-    id: 1,
-    avatar: "http://localhost:8000/images/chill1.png",
-    moment: 10,
-    user: "username 1",
-    content: "just a comment1",
-  },
-  {
-    id: 2,
-    avatar: "http://localhost:8000/images/chill1.png",
-    moment: 30,
-    user: "username 2",
-    content: "just a comment3",
-  },
-  {
-    id: 3,
-    avatar: "http://localhost:8000/images/chill1.png",
-    moment: 50,
-    user: "username 3",
-    content: "just a comment3",
-  },
-];
+import { fetchDefaultImages, sendRequest } from "@/utils/api";
+import CommentsTrack from "./commentTrack/commentTrack";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { useSession } from "next-auth/react";
+
 export interface IProps {
   dataTrack: ITrackTop | null;
+  comments: any;
+  isLikedTrack: boolean;
 }
 const WaveTrack = (props: IProps) => {
-  const { dataTrack } = props;
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { dataTrack, comments, isLikedTrack } = props;
   const { trackCurrent, setTrackCurrent } =
     useContext<ITrackContext>(TrackContext);
   const searchParams = useSearchParams();
@@ -53,6 +40,7 @@ const WaveTrack = (props: IProps) => {
   const timeRef = useRef<HTMLDivElement>(null);
   const durationRef = useRef<HTMLDivElement>(null);
   const hoverRef = useRef<HTMLDivElement>(null);
+  const firstViewRef = useRef(true);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const optionsMemo = useMemo((): Omit<WaveSurferOptions, "container"> => {
@@ -116,12 +104,27 @@ const WaveTrack = (props: IProps) => {
   }, []);
 
   const callLeft = (moment: number) => {
-    const durationHardCode = 199;
-    return (moment / durationHardCode) * 100;
+    const duration = wavesurfer?.getDuration() ?? 0;
+    return (moment / duration) * 100;
   };
 
   const wavesurfer = useWavesurfer(containerRef, optionsMemo);
 
+  const handleLikedOrDisliked = async (quantity: number) => {
+    const res = await sendRequest<IBackendRes<any>>({
+      url: `http://localhost:8000/api/v1/likes`,
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+      body: {
+        track: dataTrack?._id,
+        quantity: quantity,
+      },
+    });
+    console.log(">>> check liked", res);
+    return res;
+  };
   useEffect(() => {
     if (!wavesurfer) return;
     setIsPlaying(false);
@@ -176,129 +179,198 @@ const WaveTrack = (props: IProps) => {
       setTrackCurrent({ ...dataTrack, isPlaying: false } as ITrackCurrent);
     }
   }, [dataTrack]);
+
   const onPlayPause = useCallback(() => {
     if (wavesurfer) {
       wavesurfer && wavesurfer.playPause();
       setIsPlaying(wavesurfer.isPlaying());
     }
   }, [wavesurfer]);
+  const handleClickLike = async (quantity: number) => {
+    await handleLikedOrDisliked(quantity);
+    router.refresh();
+  };
+  const handleIncreaseView = async () => {
+    try {
+      await sendRequest<IBackendRes<any>>({
+        url: `http://localhost:8000/api/v1/tracks/increase-view`,
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: {
+          trackId: dataTrack?._id,
+        },
+      });
+
+      router.refresh();
+    } catch (error) {
+      return null;
+    }
+  };
   return (
-    <Box className="wave-track-container">
-      <Box sx={{ display: "flex", padding: "50px 500px 100px 30px" }}>
-        <Button
-          onClick={() => {
-            onPlayPause();
-            if (dataTrack && wavesurfer) {
-              setTrackCurrent({
-                ...trackCurrent,
-                isPlaying: false,
-              } as ITrackCurrent);
-            }
-          }}
-          className="button-play-pause"
-        >
-          {isPlaying === true ? <PauseCircleIcon /> : <PlayCircleIcon />}
-        </Button>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "7px",
-          }}
-        >
+    <>
+      <Box className="wave-track-container">
+        <Box sx={{ display: "flex", padding: "50px 500px 100px 30px" }}>
+          <Button
+            onClick={() => {
+              onPlayPause();
+              if (firstViewRef && firstViewRef.current) {
+                handleIncreaseView();
+                firstViewRef.current = false;
+              }
+              if (dataTrack && wavesurfer) {
+                setTrackCurrent({
+                  ...trackCurrent,
+                  isPlaying: false,
+                } as ITrackCurrent);
+              }
+            }}
+            className="button-play-pause"
+          >
+            {isPlaying === true ? <PauseCircleIcon /> : <PlayCircleIcon />}
+          </Button>
           <Box
-            component={"h1"}
             sx={{
-              background: "#000",
-              color: "#fff",
-              fontSize: "24px",
-              margin: 0,
-              fontWeight: "100",
-              lineHeight: "none",
+              display: "flex",
+              flexDirection: "column",
+              gap: "7px",
             }}
           >
-            {dataTrack?.title}
+            <Box
+              component={"h1"}
+              sx={{
+                background: "#000",
+                color: "#fff",
+                fontSize: "24px",
+                margin: 0,
+                fontWeight: "100",
+                lineHeight: "none",
+              }}
+            >
+              {dataTrack?.title}
+            </Box>
+            <Box
+              component={"h3"}
+              sx={{
+                background: "#000",
+                color: "#fff",
+                fontSize: "16px",
+                margin: 0,
+                alignSelf: "flex-start",
+                fontWeight: "100",
+                lineHeight: "none",
+                paddingBottom: "-6px",
+                display: "block",
+              }}
+            >
+              {dataTrack?.description}
+            </Box>
           </Box>
-          <Box
-            component={"h3"}
-            sx={{
-              background: "#000",
-              color: "#fff",
-              fontSize: "16px",
-              margin: 0,
-              alignSelf: "flex-start",
-              fontWeight: "100",
-              lineHeight: "none",
-              paddingBottom: "-6px",
-              display: "block",
+        </Box>
+        <div
+          style={{
+            position: "absolute",
+            height: "100%",
+            top: "0",
+            right: "30px",
+            display: "flex",
+            alignItems: "center",
+            // top: "20px",
+            // right: "20px",
+          }}
+        >
+          <img
+            style={{
+              width: "250px",
             }}
-          >
-            {dataTrack?.description}
+            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/images/${dataTrack?.imgUrl}`}
+            alt=""
+          />
+        </div>
+        <div
+          ref={containerRef}
+          className="wave-form-container"
+          style={{ width: "70%", marginLeft: "10px" }}
+        >
+          <div ref={timeRef} className="time"></div>
+          <div ref={durationRef} className="duration"></div>
+          <div className="hover" ref={hoverRef}></div>
+          <div
+            className="overlay"
+            style={{
+              position: "absolute",
+              height: "30px",
+              width: "100%",
+              bottom: "0",
+              background: "#ccc",
+            }}
+          ></div>
+          <div className="commments">
+            {comments?.map((item: any, index: number) => {
+              return (
+                <Tooltip
+                  title={`${item?.content}`}
+                  placement="bottom-end"
+                  arrow
+                  key={`item-${index}`}
+                >
+                  <img
+                    onPointerMove={(e) => {
+                      const hover = hoverRef.current!;
+                      hover.style.width = `${callLeft(item.moment)}%`;
+                    }}
+                    key={item.id}
+                    src={fetchDefaultImages(item.user.type)}
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      position: "absolute",
+                      top: "70px",
+                      left: `${callLeft(item.moment)}%`,
+                      zIndex: "20",
+                    }}
+                    alt=""
+                  />
+                </Tooltip>
+              );
+            })}
+          </div>
+        </div>
+      </Box>
+      <Box
+        component={"div"}
+        display={"flex"}
+        justifyContent={"space-between"}
+        sx={{ marginTop: 4 }}
+      >
+        <Chip
+          icon={<FavoriteIcon sx={isLikedTrack ? { fill: "red" } : {}} />}
+          label="Like"
+          onClick={() => {
+            const quantity = isLikedTrack ? -1 : 1;
+            handleClickLike(quantity);
+          }}
+          sx={isLikedTrack ? { color: "red" } : {}}
+        />
+
+        <Box component={"div"} display={"flex"} gap={3}>
+          <Box component={"div"} display={"flex"} gap={"3px"}>
+            <PlayArrowIcon />
+            <Box component={"span"}>{dataTrack?.countPlay}</Box>
+          </Box>
+          <Box component={"div"} display={"flex"} gap={"3px"}>
+            <FavoriteIcon sx={isLikedTrack ? { color: "red" } : {}} />
+            <Box component={"span"}>{dataTrack?.countLike}</Box>
           </Box>
         </Box>
       </Box>
-      <div
-        style={{
-          position: "absolute",
-          top: "0px",
-          right: "20px",
-        }}
-      >
-        <img
-          style={{
-            width: "150px",
-            zIndex: -100,
-          }}
-          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/images/${dataTrack?.imgUrl}`}
-          alt=""
-        />
-      </div>
-      <div ref={containerRef} className="wave-form-container">
-        <div ref={timeRef} className="time"></div>
-        <div ref={durationRef} className="duration"></div>
-        <div className="hover" ref={hoverRef}></div>
-        <div
-          className="overlay"
-          style={{
-            position: "absolute",
-            height: "30px",
-            width: "100%",
-            bottom: "0",
-            background: "#ccc",
-          }}
-        ></div>
-        <div className="commments">
-          {arrComments?.map((item, index) => {
-            return (
-              <Tooltip
-                title={`${item?.content}`}
-                placement="bottom-end"
-                arrow
-                key={`item-${index}`}
-              >
-                <img
-                  onPointerMove={(e) => {
-                    const hover = hoverRef.current!;
-                    hover.style.width = `${callLeft(item.moment)}%`;
-                  }}
-                  key={item.id}
-                  src={`http://localhost:8000/images/chill1.png`}
-                  style={{
-                    width: "20px",
-                    height: "20px",
-                    position: "absolute",
-                    top: "70px",
-                    left: `${callLeft(item.moment)}%`,
-                    zIndex: "20",
-                  }}
-                  alt=""
-                />
-              </Tooltip>
-            );
-          })}
-        </div>
-      </div>
-    </Box>
+      <CommentsTrack
+        dataComment={comments}
+        track={dataTrack as ITrackTop}
+        wavesurfer={wavesurfer}
+      />
+    </>
   );
 };
 
