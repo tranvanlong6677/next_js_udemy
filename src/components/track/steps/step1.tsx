@@ -63,7 +63,7 @@ const Step1 = (props: IPropsStep1) => {
 
         try {
           const res = await axios.post(
-            "http://localhost:8000/api/v1/files/upload",
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/files/upload`,
             formData,
             {
               headers: {
@@ -98,7 +98,7 @@ const Step1 = (props: IPropsStep1) => {
         }
       }
     },
-    [session]
+    [session?.access_token, setFileUpload, setPercentProgress, setValue]
   );
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     onDrop,
@@ -124,7 +124,7 @@ const Step1 = (props: IPropsStep1) => {
         <div {...getRootProps({ className: "dropzone" })}>
           <input {...getInputProps()} />
           <InputButtonUpload type="file" />
-          <p>Drag 'n' drop some files here, or click to select files</p>
+          <p>Drag &#39;n&#39; drop some files here, or click to select files</p>
         </div>
         <aside>
           <h4>Files</h4>

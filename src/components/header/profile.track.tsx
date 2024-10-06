@@ -15,6 +15,7 @@ import PauseIcon from "@mui/icons-material/Pause";
 import { TrackContext } from "@/app/lib/context/track.context";
 import { useContext, useEffect } from "react";
 import Link from "next/link";
+import { convertSlugUrl } from "@/utils/api";
 
 export const ProfileTrackElement = (props: { data: ITrackTop }) => {
   const { trackCurrent, setTrackCurrent } =
@@ -34,7 +35,9 @@ export const ProfileTrackElement = (props: { data: ITrackTop }) => {
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <CardContent sx={{ flex: "1 0 auto" }}>
             <Link
-              href={`/track/${data._id}?audio=${data.trackUrl}&id=${data._id}`}
+              href={`/track/${convertSlugUrl(data.title)}-${
+                data._id
+              }.html?audio=${data.trackUrl}`}
               style={{ color: "unset", textDecoration: "unset" }}
             >
               <Typography component="div" variant="h5">

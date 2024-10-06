@@ -16,6 +16,7 @@ import { useSession } from "next-auth/react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { sendRequest } from "@/utils/api";
 import { useToast } from "@/utils/toast";
+import Image from "next/image";
 interface IProps {
   percentProgress: number;
   fileUpload: string;
@@ -52,7 +53,7 @@ const BasicInformation = (props: IProps) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/v1/files/upload",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/files/upload`,
         formData,
         {
           headers: {
@@ -64,7 +65,6 @@ const BasicInformation = (props: IProps) => {
       if (res && res?.data && res?.data?.data && res?.data?.data?.fileName) {
         setInfo({ ...info, imgUrl: res?.data?.data?.fileName });
       }
-      console.log(">>> check res", res);
     } catch (error) {
       console.log(
         "Error uploading audio file: ",
@@ -85,10 +85,8 @@ const BasicInformation = (props: IProps) => {
   });
 
   const handleSubmitForm = async () => {
-    console.log(">>> check info done", info);
-
     const res = await sendRequest<IBackendRes<any>>({
-      url: "http://localhost:8000/api/v1/tracks",
+      url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/tracks`,
       method: "POST",
       body: {
         ...info,
@@ -127,10 +125,11 @@ const BasicInformation = (props: IProps) => {
               }}
             >
               {info && info?.imgUrl && (
-                <img
+                <Image
                   src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/images/${info.imgUrl}`}
-                  alt=""
-                  style={{ height: "300px", width: "100%" }}
+                  alt="Image user"
+                  style={{ width: "100%" }}
+                  height={300}
                 />
               )}
             </Box>

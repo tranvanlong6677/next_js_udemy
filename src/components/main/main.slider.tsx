@@ -5,6 +5,9 @@ import "slick-carousel/slick/slick-theme.css";
 import Slider, { Settings } from "react-slick";
 import { Box, Button } from "@mui/material";
 import Link from "next/link";
+import { convertSlugUrl } from "@/utils/api";
+import Image from "next/image";
+import flower from "../../../public/flowers.jpg";
 
 const NextArrow = (props: any) => {
   return (
@@ -63,6 +66,32 @@ const MainSlider = (props: { data: ITrackTop[]; category: string }) => {
     arrows: true,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          initialSlide: 2,
+        },
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+    ],
   };
   return (
     <>
@@ -73,12 +102,8 @@ const MainSlider = (props: { data: ITrackTop[]; category: string }) => {
             padding: "0 10px",
           },
           img: {
-            border: "1px solid #ccc",
             height: "200px",
           },
-          // img: {
-          //   height: "200px",
-          // },
         }}
       >
         <h2>{props?.category}</h2>
@@ -87,12 +112,25 @@ const MainSlider = (props: { data: ITrackTop[]; category: string }) => {
             props?.data.map((item: ITrackTop, index: number) => {
               return (
                 <div className="song-items" key={`item-${index}`}>
-                  <img
-                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/images/${item.imgUrl}`}
-                    alt=""
-                  />
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      height: "200px",
+                    }}
+                  >
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/images/${item.imgUrl}`}
+                      alt="images tracks"
+                      fill
+                      style={{ objectFit: "contain" }}
+                    />
+                  </div>
+
                   <Link
-                    href={`/track/${item._id}?audio=${item.trackUrl}&id=${item._id}`}
+                    href={`/track/${convertSlugUrl(item.title)}-${
+                      item._id
+                    }.html?audio=${item.trackUrl}&id=${item._id}`}
                     style={{ color: "unset", textDecoration: "unset" }}
                   >
                     <h4>{item?.title}</h4>

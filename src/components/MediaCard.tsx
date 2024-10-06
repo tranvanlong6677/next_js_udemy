@@ -15,7 +15,6 @@ export default function MediaCard({
 }) {
   return (
     <Card>
-      asfasfadf
       <Image
         alt="Random image"
         src="https://source.unsplash.com/random"

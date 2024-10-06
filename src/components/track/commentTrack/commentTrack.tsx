@@ -42,7 +42,7 @@ const CommentsTrack = (props: ICommentsTrack) => {
   const handleComment = async () => {
     try {
       const res = await sendRequest<IBackendRes<any>>({
-        url: `http://localhost:8000/api/v1/comments`,
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/comments`,
         method: "POST",
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
@@ -111,11 +111,11 @@ const CommentsTrack = (props: ICommentsTrack) => {
             >
               <Box
                 component={"img"}
-                src={fetchDefaultImages(track.uploader.type)}
+                src={fetchDefaultImages(track?.uploader?.type)}
                 sx={{ width: "200px" }}
               />
 
-              <Box component={"span"}>{track.uploader.email}</Box>
+              <Box component={"span"}>{track?.uploader?.email}</Box>
               <Box component={"h2"} sx={{ margin: 0 }}>
                 Uploader
               </Box>

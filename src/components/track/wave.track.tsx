@@ -1,26 +1,27 @@
 "use client";
 
-import {
-  useRef,
-  useMemo,
-  useCallback,
-  useState,
-  useEffect,
-  useContext,
-} from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useWavesurfer } from "@/utils/customHook";
-import { WaveSurferOptions } from "wavesurfer.js";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import "./wave.scss";
-import { Box, Button, Chip, Tooltip } from "@mui/material";
 import { TrackContext } from "@/app/lib/context/track.context";
 import { fetchDefaultImages, sendRequest } from "@/utils/api";
-import CommentsTrack from "./commentTrack/commentTrack";
+import { useWavesurfer } from "@/utils/customHook";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import { Box, Button, Chip, Tooltip } from "@mui/material";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { WaveSurferOptions } from "wavesurfer.js";
+import CommentsTrack from "./commentTrack/commentTrack";
+import "./wave.scss";
 
 export interface IProps {
   dataTrack: ITrackTop | null;
@@ -112,7 +113,7 @@ const WaveTrack = (props: IProps) => {
 
   const handleLikedOrDisliked = async (quantity: number) => {
     const res = await sendRequest<IBackendRes<any>>({
-      url: `http://localhost:8000/api/v1/likes`,
+      url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/likes`,
       method: "POST",
       headers: {
         Authorization: `Bearer ${session?.access_token}`,
@@ -122,7 +123,6 @@ const WaveTrack = (props: IProps) => {
         quantity: quantity,
       },
     });
-    console.log(">>> check liked", res);
     return res;
   };
   useEffect(() => {
@@ -193,7 +193,7 @@ const WaveTrack = (props: IProps) => {
   const handleIncreaseView = async () => {
     try {
       await sendRequest<IBackendRes<any>>({
-        url: `http://localhost:8000/api/v1/tracks/increase-view`,
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/tracks/increase-view`,
         method: "POST",
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
@@ -280,12 +280,11 @@ const WaveTrack = (props: IProps) => {
             // right: "20px",
           }}
         >
-          <img
-            style={{
-              width: "250px",
-            }}
+          <Image
+            width={250}
+            height={250}
             src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/images/${dataTrack?.imgUrl}`}
-            alt=""
+            alt="Image track"
           />
         </div>
         <div
@@ -315,7 +314,7 @@ const WaveTrack = (props: IProps) => {
                   arrow
                   key={`item-${index}`}
                 >
-                  <img
+                  <Image
                     onPointerMove={(e) => {
                       const hover = hoverRef.current!;
                       hover.style.width = `${callLeft(item.moment)}%`;
@@ -323,14 +322,14 @@ const WaveTrack = (props: IProps) => {
                     key={item.id}
                     src={fetchDefaultImages(item.user.type)}
                     style={{
-                      width: "20px",
-                      height: "20px",
                       position: "absolute",
                       top: "70px",
                       left: `${callLeft(item.moment)}%`,
                       zIndex: "20",
                     }}
-                    alt=""
+                    width={20}
+                    height={20}
+                    alt="Image user comment"
                   />
                 </Tooltip>
               );

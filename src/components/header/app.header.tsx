@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { fetchDefaultImages } from "@/utils/api";
+import Image from "next/image";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -218,7 +219,7 @@ export default function AppHeader() {
                 >
                   <Link href="/playlist">Playlist</Link>
                   <Link href="/like">Likes</Link>
-                  <Link href="/track/upload">Upload</Link>
+                  <Link href="/upload">Upload</Link>
 
                   <IconButton
                     size="large"
@@ -229,14 +230,14 @@ export default function AppHeader() {
                     onClick={handleProfileMenuOpen}
                     color="inherit"
                   >
-                    <img
-                      src={fetchDefaultImages(session.user.type)}
-                      alt=""
+                    <Image
+                      src={fetchDefaultImages(session.user?.type)}
+                      alt="avatar user"
                       style={{
-                        width: "40px",
-                        height: "40px",
                         borderRadius: "50%",
                       }}
+                      width={40}
+                      height={40}
                     />
                   </IconButton>
                 </Box>

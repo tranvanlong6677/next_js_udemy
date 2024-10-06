@@ -35,7 +35,6 @@ const UploadTabs = () => {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
-  console.log("render upload tabs");
   return (
     <Box
       sx={{
