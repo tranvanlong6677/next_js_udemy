@@ -4,6 +4,7 @@ import * as React from "react";
 import NextAuthWrapper from "./lib/next.auth.wrapper";
 import { ToastProvider } from "@/utils/toast";
 import { TrackContextProvider } from "./lib/context/track.context";
+import NProgressProvider from "./lib/nprogressProvider";
 
 export default function RootLayout({
   children,
@@ -15,9 +16,11 @@ export default function RootLayout({
       <body>
         <ThemeRegistry>
           <NextAuthWrapper>
-            <TrackContextProvider>
-              <ToastProvider>{children}</ToastProvider>
-            </TrackContextProvider>
+            <NProgressProvider>
+              <TrackContextProvider>
+                <ToastProvider>{children}</ToastProvider>
+              </TrackContextProvider>
+            </NProgressProvider>
           </NextAuthWrapper>
         </ThemeRegistry>
       </body>
