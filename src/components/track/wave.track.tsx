@@ -102,7 +102,7 @@ const WaveTrack = (props: IProps) => {
       progressColor: progressGradient,
       cursorColor: "#000",
     };
-  }, []);
+  }, [fileName]);
 
   const callLeft = (moment: number) => {
     const duration = wavesurfer?.getDuration() ?? 0;
@@ -171,14 +171,14 @@ const WaveTrack = (props: IProps) => {
     if (wavesurfer && trackCurrent?.isPlaying) {
       wavesurfer.pause();
     }
-  }, [trackCurrent]);
+  }, [trackCurrent, wavesurfer]);
 
   // load trang detail track, neu chua co current track thi se cho track hien tai detail thanh current track
   useEffect(() => {
     if (dataTrack && dataTrack?._id && !trackCurrent?._id) {
       setTrackCurrent({ ...dataTrack, isPlaying: false } as ITrackCurrent);
     }
-  }, [dataTrack]);
+  }, [dataTrack, setTrackCurrent, trackCurrent?._id]);
 
   const onPlayPause = useCallback(() => {
     if (wavesurfer) {
@@ -276,8 +276,6 @@ const WaveTrack = (props: IProps) => {
             right: "30px",
             display: "flex",
             alignItems: "center",
-            // top: "20px",
-            // right: "20px",
           }}
         >
           <Image
