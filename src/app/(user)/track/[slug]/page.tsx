@@ -3,7 +3,8 @@ import WaveTrack from "@/components/track/wave.track";
 import { sendRequest } from "@/utils/api";
 import { Container } from "@mui/material";
 import { getServerSession } from "next-auth";
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 type Props = {
   params: { slug: string };
@@ -46,6 +47,10 @@ const DetailTrackPage = async ({ params }: { params: { slug: string } }) => {
       cache: "no-store",
     },
   });
+
+  if (!res.data) {
+    notFound();
+  }
 
   const fetchDataComment = async () => {
     const res = await sendRequest<IBackendRes<any>>({
